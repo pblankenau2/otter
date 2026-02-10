@@ -1,0 +1,9 @@
+[ee] # <- don't change this
+project = "MY-EE-PROJECT"
+
+[model_run_name]
+fields_ee_asset = "PATH/TO/EE/FEATURE/COLLECTION"
+field_identifier = "UNIQUE_FIELD_ID_PROPERTY_NAME"
+out_dir = "folder_to_save_data"
+start_dt = "YYYY-MM-DD"
+end_dt = "YYYY-MM-DD"
