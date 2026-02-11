@@ -12,4 +12,4 @@ Or equivalently: `./bi.sh`
 
 ## Running OTTER
 
-See example in `field_average_otter`
+See example in `field_avg_otter`
