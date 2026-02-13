@@ -124,7 +124,7 @@ def do_wb_interp(aws_max: float, aws_u_ts: np.ndarray,
             peff_ts, et_ts)
 
 def run_df(df, nodata=-9999, init_dru_frac=1., init_drl_frac=1., mad_frac=1.):
-    missing = [x not in df.columns for x in ["pr", "et", "eto", "aws_u", "aws_max", "cn"]]
+    missing = [x for x in ["pr", "et", "eto", "aws_u", "aws_max", "cn"] if x not in df.columns]
     if any(missing):
         raise Exception(f"input DataFrame missing required column(s) {missing}")
 
