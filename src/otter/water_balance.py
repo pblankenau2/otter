@@ -123,36 +123,28 @@ def do_wb_interp(aws_max: float, aws_u_ts: np.ndarray,
     return (dru_ts, drl_ts, perc_ts, dperc_ts, ro_ts, etaw_ts,
             peff_ts, et_ts)
 
-@njit(parallel=True)
-def chunk_inner(chunk_id, aws_max, aws_u, cn, pr, et, eto,
-                nodata=-9999., init_dru_frac=1., init_drl_frac=1):
-    print(f"allocating arrays chunk {chunk_id}")
-    dru = np.ones(eto.shape, dtype='float32')*nodata
-    drl = np.ones(eto.shape, dtype='float32')*nodata
-    perc = np.ones(eto.shape, dtype='float32')*nodata
-    dperc = np.ones(eto.shape, dtype='float32')*nodata
-    etaw = np.ones(eto.shape, dtype='float32')*nodata
-    ro = np.ones(eto.shape, dtype='float32')*nodata
-    peff = np.ones(eto.shape, dtype='float32')*nodata
-    et_int = np.ones(eto.shape, dtype='float32')*nodata
+def run_df(df, nodata=-9999, init_dru_frac=1., init_drl_frac=1., mad_frac=1.):
+    missing = [x not in df.columns for x in ["pr", "et", "eto", "aws_u", "aws_max", "cn"]]
+    if any(missing):
+        raise Exception(f"input DataFrame missing required column(s) {missing}")
 
-    print(f"running chunk {chunk_id}")
-    for i in prange(eto.shape[0]):
-        res = do_wb_interp(aws_max[i], aws_u[i, :], cn[i, :],
-                           pr[i, :], et[i, :], eto[i, :],
-                           nodata=nodata,
-                           init_dru_frac=init_dru_frac,
-                           init_drl_frac=init_drl_frac)
-        (dru_ts, drl_ts, perc_ts, dperc_ts, ro_ts, etaw_ts,
-        peff_ts, et_ts) = res
+    def n(attr):
+        return df[attr].to_numpy()
 
-        dru[i] = dru_ts
-        drl[i] = drl_ts
-        perc[i] = perc_ts
-        dperc[i] = dperc_ts
-        etaw[i] = etaw_ts
-        ro[i] = ro_ts
-        peff[i] = peff_ts
-        et_int[i] = et_ts
+    dru, drl, perc, dperc, ro, etaw, peff, et\
+        = do_wb_interp(n("aws_max")[0], n("aws_u"), n("cn"), n("pr"),
+                       n("et"), n("eto"),
+                       init_dru_frac=init_dru_frac,
+                       init_drl_frac=init_drl_frac,
+                       nodata=nodata, mad_frac=mad_frac)
 
-    return dru, drl, perc, dperc, etaw, ro, peff, et_int
+    df["dru"] = dru
+    df["drl"] = drl
+    df["perc"] = perc
+    df["dperc"] = dperc
+    df["ro"] = ro
+    df["etaw"] = etaw
+    df["peff"] = peff
+    df["et_interp"] = et
+
+    return df
