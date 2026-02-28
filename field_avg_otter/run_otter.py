@@ -37,8 +37,8 @@ with pd.HDFStore(input_fn, mode="r") as in_data:
                 dru, drl, perc, dperc, ro, etaw, peff, et\
                     = do_wb_interp(n("aws_max")[0], n("aws_u"), n("cn"), n("pr"),
                                    n("et"), n("eto"),
-                                   init_dru_frac=1., init_drl_frac=1.)
-            except:
+                                   init_dru_frac=1., init_drl_frac=1., mad_frac=1.0)
+            except Exception as e:
                 import ipdb
                 ipdb.set_trace()
         
