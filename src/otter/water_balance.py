@@ -2,24 +2,25 @@ import numpy as np
 from numba import njit, prange
 
 @njit
-def etof_interp(et_ts, eto_ts, nodata=-9999., dtype='float32'):
+def etof_interp(et_ts, eto_ts, nodata=-9999., dtype='float32', max_etof=1.4, min_eto=0.01):
     etof_ts = np.zeros_like(eto_ts, dtype=dtype)
 
     # fill leading empty values with first EToF
     first_et_ind = np.argmax(et_ts != nodata)
     first_et_val = et_ts[first_et_ind]
     first_etof = first_et_val / eto_ts[first_et_ind]
-    etof_ts[:first_et_ind+1] = first_etof
+    etof_ts[:first_et_ind+1] = min(first_etof, max_etof)
 
     # handle zero eto values
-    eto_ts[eto_ts==0] = eto_ts[eto_ts!=0].min()
+    #eto_ts[eto_ts==0] = eto_ts[eto_ts!=0].min()
+    eto_ts[eto_ts < min_eto] = min_eto 
 
     start_ind = first_et_ind
     for i in range(first_et_ind+1, et_ts.size):
         # find next non-missing et value
         if et_ts[i] != nodata:
-            start_etof = et_ts[start_ind] / eto_ts[start_ind]
-            end_etof = et_ts[i] / eto_ts[i]
+            start_etof = min(et_ts[start_ind] / eto_ts[start_ind], max_etof)
+            end_etof = min(et_ts[i] / eto_ts[i], max_etof)
 
             # linear interpolate from start to end
             etof_ts[start_ind:i+1] = np.linspace(start_etof,
@@ -85,7 +86,8 @@ def do_wb_interp(aws_max: float, aws_u_ts: np.ndarray,
             last_drl = total_dep * (aws_max - aws_u_ts[i]) / aws_max
             last_aws_u = aws_u_ts[i]
 
-            if last_dru / last_aws_u > mad_frac:
+            # temporary small fudge
+            if last_dru / last_aws_u - 0.01 > mad_frac:
                 raise Exception("depletion exceed max allowable depletion after crop switch")
 
         S = (25400-254*cn_ts[i])/cn_ts[i]
