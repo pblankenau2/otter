@@ -39,6 +39,7 @@ with pd.HDFStore(input_fn, mode="r") as in_data:
                                    n("et"), n("eto"),
                                    init_dru_frac=1., init_drl_frac=1., mad_frac=1.0)
             except Exception as e:
+                print(e)
                 import ipdb
                 ipdb.set_trace()
         

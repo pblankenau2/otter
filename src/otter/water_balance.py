@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit, prange
 
 @njit
-def etof_interp(et_ts, eto_ts, nodata=-9999., dtype='float32', max_etof=1.4, min_eto=0.01):
+def etof_interp(et_ts, eto_ts, nodata=-9999., dtype='float32', max_etof=2.0, min_eto=0.01):
     etof_ts = np.zeros_like(eto_ts, dtype=dtype)
 
     # fill leading empty values with first EToF
