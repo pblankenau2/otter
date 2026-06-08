@@ -38,16 +38,19 @@ def make_rz_dict(crop_code, depth):
 
 
 @njit
-def calc_aws(cdl_code, mukey, rz_dict, aws_dict):
+def calc_aws(cdl_code, mukey, rz_dict, aws_dict, alt_mrd=None):
     if cdl_code == 0 or mukey == 0:
         return 0
 
-    try:
-        rz_depth = rz_dict[cdl_code]
-    except Exception:
-        return 0
-    if np.isnan(rz_depth):
-        return 0
+    if alt_mrd is None:
+        try:
+            rz_depth = rz_dict[cdl_code]
+        except Exception:
+            return 0
+        if np.isnan(rz_depth):
+            return 0
+    else:
+        rz_depth = alt_mrd
 
     aws25, aws50, aws100, aws150 = aws_dict[mukey]
 
@@ -221,8 +224,8 @@ def pt_soil_func():
     hydgrp_dict = get_hydgrp_dict()
     crop_cat_dict = get_crop_cat_dict()
 
-    def pt_soil(cdl_code, mukey, make_max=False):
-        aws = calc_aws(cdl_code, mukey, rz_dict, aws_dict)
+    def pt_soil(cdl_code, mukey, make_max=False, alt_mrd=None):
+        aws = calc_aws(cdl_code, mukey, rz_dict, aws_dict, alt_mrd=alt_mrd)
         cn = calc_cn(cdl_code, mukey, crop_cat_dict, hydgrp_dict, cn_dict)
 
         if not make_max:
